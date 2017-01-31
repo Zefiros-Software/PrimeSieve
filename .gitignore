@@ -1,0 +1,17 @@
+**/My Inspector Results*
+bin/*
+**/.vs
+**/*.vcxproj*
+**/*.sdf
+**/*.sln
+**/*.VC.db
+**/*.VC.opendb
+**/My Amplifier XE Results*
+**.opensdf
+
+**/Makefile
+**/serialisation.make
+**/file.bin
+test/*.licenseheader
+bench/*.licenseheader
+test/testPrimes.txt

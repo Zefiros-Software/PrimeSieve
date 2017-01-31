@@ -1,0 +1,19 @@
+
+{
+    "dependencies": [ 
+    {
+        "hash": "9ae086a9ebafabdc49b71bb7f3879f551adee09a",
+        "name": "Zefiros-Software/GoogleTest",
+        "tag": "master",
+        "type": "library",
+        "version": "@head"
+    }, 
+    {
+        "hash": "fef203bd021bad019421abf5785a4ae89bd6ea15",
+        "name": "Zefiros-Software/GoogleBenchmark",
+        "tag": "master",
+        "type": "library",
+        "version": "@head"
+    }],
+    "name": "Zefiros-Software/PrimeSieve"
+}
