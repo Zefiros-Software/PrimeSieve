@@ -42,7 +42,7 @@ static inline void TimeManual( benchmark::State &state, const tFunc &func )
 }
 
 template< typename tSieve >
-void BenchNaiveSieve( benchmark::State &state )
+void BenchSieve( benchmark::State &state )
 {
     const size_t nNumbers = state.range( 0 );
     tSieve sieve( nNumbers );
@@ -60,17 +60,34 @@ void BenchNaiveSieve( benchmark::State &state )
     state.SetItemsProcessed( state.iterations() * nNumbers );
 }
 
-// BENCHMARK_TEMPLATE( BenchNaiveSieve, NaivePrimeSieve )->Arg( 999983 )->MinTime( 4.0 );
-// BENCHMARK_TEMPLATE( BenchNaiveSieve, NaivePrimeSieve )->Arg( 1000 )->MinTime( 4.0 );
-//
-// BENCHMARK_TEMPLATE( BenchNaiveSieve, NaivePrimeSieve2 )->Arg( 999983 )->MinTime( 4.0 );
-// BENCHMARK_TEMPLATE( BenchNaiveSieve, NaivePrimeSieve2 )->Arg( 1000 )->MinTime( 4.0 );
-//
-// BENCHMARK_TEMPLATE( BenchNaiveSieve, NaivePrimeSieve3 )->Arg( 999983 )->MinTime( 4.0 );
-// BENCHMARK_TEMPLATE( BenchNaiveSieve, NaivePrimeSieve3 )->Arg( 1000 )->MinTime( 4.0 );
-//
-BENCHMARK_TEMPLATE( BenchNaiveSieve, NaivePrimeSieve4 )->Arg( 999983 )->MinTime( 4.0 );
-// BENCHMARK_TEMPLATE( BenchNaiveSieve, NaivePrimeSieve4 )->Arg( 1000 )->MinTime( 4.0 );
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< Vector > )->Arg( 1999993 )->MinTime( 2.0 );
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< Vector > )->Arg( 1000 )->MinTime( 2.0 );
+
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< Vector > )->Arg( 1999993 )->MinTime( 2.0 );
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< Vector > )->Arg( 1000 )->MinTime( 2.0 );
+
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< Vector > )->Arg( 1999993 )->MinTime( 2.0 );
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< Vector > )->Arg( 1000 )->MinTime( 2.0 );
+
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< Vector  > )->Arg( 1999993 )->MinTime( 2.0 );
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< Vector  > )->Arg( 1000 )->MinTime( 2.0 );
+
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< BitArray > )->Arg( 1999993 )->MinTime( 2.0 );
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< BitArray > )->Arg( 1000 )->MinTime( 2.0 );
+
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< BitArray > )->Arg( 1999993 )->MinTime( 2.0 );
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< BitArray > )->Arg( 1000 )->MinTime( 2.0 );
+
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< BitArray > )->Arg( 1999993 )->MinTime( 2.0 );
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< BitArray > )->Arg( 1000 )->MinTime( 2.0 );
+
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< BitArray > )->Arg( 1999993 )->MinTime( 2.0 );
+//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< BitArray > )->Arg( 1000 )->MinTime( 2.0 );
+
+// BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve5<> )->Arg( 1999993 )->MinTime( 2.0 );
+// BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve6<> )->Arg( 1999993 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve9< 10000000000 > )->Arg( 10000000000 )->MinTime( 2.0 );
+//BENCHMARK_TEMPLATE( BenchNaiveSieve, PrimeSieve5 )->Arg( 1000 )->MinTime( 2.0 );
 
 int main( int argc, char **argv )
 {
@@ -80,6 +97,45 @@ int main( int argc, char **argv )
     {
         return 1;
     }
+
+    //     Wheel<uint64_t, 3, 5, 7> wheel;
+    //
+    //     for ( uint32_t j = 0; j < 5; ++j )
+    //     {
+    //         uint64_t mask = wheel.GetMask( j );
+    //
+    //         for ( uint32_t i = 0; i < 64; ++i )
+    //         {
+    //             if ( ( ( mask ) >> i ) & 0x1 )
+    //             {
+    //                 std::cout << 1ul;
+    //             }
+    //             else
+    //             {
+    //                 std::cout << 0ul;
+    //             }
+    //
+    //             if ( ( ( j * 64 + i + 1 ) % 105 ) == 0 )
+    //             {
+    //                 std::cout << std::endl;
+    //             }
+    //         }
+    //
+    //         std::cout << " ";
+    //     }
+    //
+    //     for ( uint32_t j = 0; j < 5; ++j )
+    //     {
+    //         uint64_t mask = wheel.GetMask( j );
+    //
+    //         for ( uint32_t i = 0; i < 64; ++i )
+    //         {
+    //             if ( ( ( mask ) >> i ) & 0x1 )
+    //             {
+    //                 std::cout << ( ( ( i + 64 * j ) << 1 ) + 1 ) << std::endl;
+    //             }
+    //         }
+    //     }
 
     ::benchmark::RunSpecifiedBenchmarks();
 };
