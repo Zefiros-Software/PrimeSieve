@@ -20,14 +20,52 @@
  * THE SOFTWARE.
  */
 #pragma once
-#ifndef __PRIMESIEVE_SIEVE_H__
-#define __PRIMESIEVE_SIEVE_H__
+#ifndef __PRIMESIEVE_VECTORWRAPPER_H__
+#define __PRIMESIEVE_VECTORWRAPPER_H__
 
-#include "sieve/sieve1.h"
-#include "sieve/vectorWrapper.h"
-#include "sieve/denseBitArray.h"
+#include <vector>
 
-typedef VectorWrapper< uint8_t > Vector;
-typedef DenseBitArray< uint64_t > BitArray;
+template< typename tBase >
+class VectorWrapper
+{
+public:
+
+    static constexpr tBase tTrue = 0x1;
+    static constexpr tBase tFalse = 0x0;
+
+    explicit VectorWrapper( size_t size )
+        : mBooleans( size, tTrue ),
+          mSize( size ),
+          mCursor( 0 )
+    {
+    }
+
+    void SetFalse( size_t i )
+    {
+        mBooleans[i] ^= mBooleans[i];
+    }
+
+    bool Get( size_t i ) const
+    {
+        return mBooleans[i] == tTrue;
+    }
+
+    void Reset()
+    {
+        std::fill( mBooleans.begin(), mBooleans.end(), tTrue );
+    }
+
+    size_t Size() const
+    {
+        return mSize;
+    }
+
+private:
+
+    std::vector< tBase > mBooleans;
+    size_t mSize;
+    size_t mCursor;
+
+};
 
 #endif

@@ -2,7 +2,7 @@
 {
     "dependencies": [ 
     {
-        "hash": "9ae086a9ebafabdc49b71bb7f3879f551adee09a",
+        "hash": "d62d6c6556d96dda924382547c54a4b3afedb22c",
         "name": "Zefiros-Software/GoogleTest",
         "tag": "master",
         "type": "library",

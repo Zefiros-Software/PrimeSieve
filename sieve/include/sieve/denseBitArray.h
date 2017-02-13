@@ -20,14 +20,60 @@
  * THE SOFTWARE.
  */
 #pragma once
-#ifndef __PRIMESIEVE_SIEVE_H__
-#define __PRIMESIEVE_SIEVE_H__
+#ifndef __PRIMESIEVE_DENSEBITARRAY_H__
+#define __PRIMESIEVE_DENSEBITARRAY_H__
 
-#include "sieve/sieve1.h"
-#include "sieve/vectorWrapper.h"
-#include "sieve/denseBitArray.h"
+#include <vector>
 
-typedef VectorWrapper< uint8_t > Vector;
-typedef DenseBitArray< uint64_t > BitArray;
+template< typename tBase >
+class DenseBitArray
+{
+public:
+
+    explicit DenseBitArray( size_t size )
+        : mBits( ( size + mBitsInBase - 1 ) / mBitsInBase, ~( mBit ^ mBit ) ),
+          mSize( size ),
+          mCursor( 0 )
+    {
+    }
+
+    std::vector< tBase > &GetRaw()
+    {
+        return mBits;
+    }
+
+    void SetFalse( size_t i )
+    {
+        const size_t iDiv = i / mBitsInBase;
+
+        const tBase bit = mBits[iDiv] & ( mBit << ( i % mBitsInBase ) );
+        mBits[iDiv] ^= bit;
+    }
+
+    bool Get( size_t i ) const
+    {
+        return ( mBits[i / mBitsInBase] & ( mBit << ( i % mBitsInBase ) ) ) > 0;
+    }
+
+    void Reset()
+    {
+        std::fill( mBits.begin(), mBits.end(), ~0x0 );
+    }
+
+    size_t Size() const
+    {
+        return mSize;
+    }
+
+private:
+
+    static constexpr size_t mBitsInBase = sizeof( tBase ) * 8;
+    static constexpr tBase mBit = 0x1;
+
+    std::vector< tBase > mBits;
+    size_t mSize;
+    size_t mCursor;
+
+};
 
 #endif
