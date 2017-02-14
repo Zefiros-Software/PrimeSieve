@@ -23,7 +23,7 @@
 #ifndef __PRIMESIEVE_ADVANCEDSIEVE_H__
 #define __PRIMESIEVE_ADVANCEDSIEVE_H__
 
-#include "sieve/memoryPool.h"
+#include "sieve/advanced/memoryPool.h"
 #include "sieve/helper.h"
 
 #include <iostream>
@@ -577,6 +577,17 @@ public:
 
         uint64_t p = 0;
 
+        // Every byte contains the numbers:
+        //   - i * 30 + 7
+        //   - i * 30 + 11
+        //   - i * 30 + 13
+        //   - i * 30 + 17
+        //   - i * 30 + 19
+        //   - i * 30 + 23
+        //   - i * 30 + 29
+        //   - i * 30 + 31
+        //
+        // The numbers that fit in a segment are the size in bytes * 30
         uint32_t segmentSize = static_cast<uint32_t>( mSegment.size() ) * 30;
         uint64_t pLimit = limit / 30 * 30;
 
@@ -588,7 +599,7 @@ public:
             //         - Cross off multiples of the corresponding number
             //         - Append it to a list of primes we will cross off in the next segment
             //         - Output the number
-            for ( uint8_t *end = q + ( std::min<uint64_t>( Sqrt( segmentSize ), Sqrt( limit ) ) + 29 ) / 30; q < end; ++q, p += 30 )
+            for ( uint8_t *end = q + ( std::min<uint64_t>( Sqrt( segmentSize + 7 ), Sqrt( limit ) ) + 29 ) / 30; q < end; ++q, p += 30 )
             {
                 SIEVE_ALL_BITVALUES( ProcessBlockPrime, *q, p, 0, segmentSize, output );
             }
@@ -620,11 +631,15 @@ public:
         {
             std::fill( mSegment.begin(), mSegment.end(), ~0x0 );
 
+            // Sieve all the necessary primes we found below sqrt( limit ) from this segment
             for ( ISmallPrime *prime : mPrimes )
             {
                 prime->SieveSegment( mSegment.data(), segmentSize );
             }
 
+            // For every block in the segment:
+            //     If a bit position is still marked prime:
+            //         - Output the corresponding number
             output.MaybeCall( [&]()
             {
                 uint64_t qLimit = std::min<uint64_t>( mSegment.size(), limit - segmentStart );
