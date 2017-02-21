@@ -24,7 +24,6 @@
 #define __PRIMESIEVE_BITVALUEHELPERS_H__
 
 #include <stdint.h>
-#include <assert.h>
 
 
 template< uint64_t tOffsetMod30 >

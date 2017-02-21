@@ -24,7 +24,6 @@
 #define BENCHMARK_HAS_CXX11
 #include "benchmark/benchmark.h"
 
-#include <iostream>
 #include <chrono>
 
 template< typename tFunc >

@@ -130,7 +130,11 @@ public:
     }
 
     Prime()
-    {}
+        : mPrimeDiv30( 0 ),
+          mNextMultipleIndex( 0 ),
+          mWheelIndex( 0 )
+    {
+    }
 
     void Init( uint64_t prime, uint64_t segmentStart )
     {
@@ -496,7 +500,7 @@ private:
         if ( q & GetBitMask<tOffsetMod30>() )
         {
             Prime<tOffsetMod30> *prime = mFactory.Init<tOffsetMod30>( p + tOffsetMod30, segmentStart );
-            mPrimeStorage.template GetStorage<tOffsetMod30>().push_back( prime );
+            mPrimeStorage.GetStorage<tOffsetMod30>().push_back( prime );
             prime->SieveSegment( mSegment.data(), static_cast<uint32_t>( segmentEnd ) );
             output << p + tOffsetMod30;
         }
@@ -508,7 +512,7 @@ private:
         if ( q & GetBitMask<tOffsetMod30>() )
         {
             Prime<tOffsetMod30> *prime = mFactory.Init<tOffsetMod30>( p + tOffsetMod30, segmentStart );
-            mPrimeStorage.template GetStorage<tOffsetMod30>().push_back( prime );
+            mPrimeStorage.GetStorage<tOffsetMod30>().push_back( prime );
 
             output << p + tOffsetMod30;
         }

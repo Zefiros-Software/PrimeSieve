@@ -25,10 +25,8 @@
 
 #include "gtest/gtest.h"
 
-#include <iostream>
 #include <fstream>
 #include <chrono>
-#include "sieve/advanced/primeFactory.h"
 
 std::stringstream gSs;
 
