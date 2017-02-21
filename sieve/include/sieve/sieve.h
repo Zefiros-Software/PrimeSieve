@@ -23,11 +23,13 @@
 #ifndef __PRIMESIEVE_SIEVE_H__
 #define __PRIMESIEVE_SIEVE_H__
 
-#include "sieve/sieve1.h"
-#include "sieve/vectorWrapper.h"
-#include "sieve/denseBitArray.h"
+#include "sieve/simple/denseBitArray.h"
+#include "sieve/simple/vectorWrapper.h"
+#include "sieve/simple/simpleSieve.h"
 
-typedef VectorWrapper< uint8_t > Vector;
-typedef DenseBitArray< uint64_t > BitArray;
+#include "sieve/advanced/advancedSieve.h"
+#include "sieve/advanced/primeFactory.h"
+
+#include "sieve/output.h"
 
 #endif

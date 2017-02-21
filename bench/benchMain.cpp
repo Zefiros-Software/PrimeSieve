@@ -41,53 +41,91 @@ static inline void TimeManual( benchmark::State &state, const tFunc &func )
     state.SetIterationTime( elapsed_seconds.count() );
 }
 
-template< typename tSieve >
+template< typename tSieve, uint64_t tNumbers = 0 >
 void BenchSieve( benchmark::State &state )
 {
-    const size_t nNumbers = state.range( 0 );
-    tSieve sieve( nNumbers );
+    const size_t nNumbers = tNumbers ? tNumbers : state.range( 0 );
+    tSieve sieve;
+    VoidOutput vo;
 
     while ( state.KeepRunning() )
     {
-        sieve.Reset();
-
         TimeManual( state, [&]()
         {
-            sieve.ExecuteSieve();
+            sieve.ExecuteSieve( nNumbers, vo );
         } );
     }
 
     state.SetItemsProcessed( state.iterations() * nNumbers );
 }
 
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< Vector > )->Arg( 1999993 )->MinTime( 2.0 );
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< Vector > )->Arg( 1000 )->MinTime( 2.0 );
+template< typename tSieve, uint64_t tNumbers = 0 >
+void BenchAdvancedSieve( benchmark::State &state )
+{
+    const size_t nNumbers = tNumbers ? tNumbers : state.range( 0 ) * 10ull;
 
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< Vector > )->Arg( 1999993 )->MinTime( 2.0 );
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< Vector > )->Arg( 1000 )->MinTime( 2.0 );
+    typename tSieve::tFactoryType factory;
+    std::vector<uint8_t> segment( 32 * 1024 );
 
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< Vector > )->Arg( 1999993 )->MinTime( 2.0 );
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< Vector > )->Arg( 1000 )->MinTime( 2.0 );
+    tSieve sieve( factory, segment );
+    VoidOutput vo;
 
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< Vector  > )->Arg( 1999993 )->MinTime( 2.0 );
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< Vector  > )->Arg( 1000 )->MinTime( 2.0 );
+    while ( state.KeepRunning() )
+    {
+        TimeManual( state, [&]()
+        {
+            sieve.ExecuteSieve( nNumbers, vo );
+        } );
+    }
 
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< BitArray > )->Arg( 1999993 )->MinTime( 2.0 );
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< BitArray > )->Arg( 1000 )->MinTime( 2.0 );
+    state.SetComplexityN( static_cast<int>( nNumbers ) );
+    state.SetItemsProcessed( state.iterations() * nNumbers );
+}
 
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< BitArray > )->Arg( 1999993 )->MinTime( 2.0 );
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< BitArray > )->Arg( 1000 )->MinTime( 2.0 );
+typedef VectorWrapper< uint8_t > Vector;
 
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< BitArray > )->Arg( 1999993 )->MinTime( 2.0 );
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< BitArray > )->Arg( 1000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< Vector > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< Vector > )->Arg( 1000 )->MinTime( 2.0 );
 
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< BitArray > )->Arg( 1999993 )->MinTime( 2.0 );
-//BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< BitArray > )->Arg( 1000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< Vector > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< Vector > )->Arg( 1000 )->MinTime( 2.0 );
 
-// BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve5<> )->Arg( 1999993 )->MinTime( 2.0 );
-// BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve6<> )->Arg( 1999993 )->MinTime( 2.0 );
-BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve9< 10000000000 > )->Arg( 10000000000 )->MinTime( 2.0 );
-//BENCHMARK_TEMPLATE( BenchNaiveSieve, PrimeSieve5 )->Arg( 1000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< Vector > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< Vector > )->Arg( 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< Vector > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< Vector > )->Arg( 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve5< Vector > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve5< Vector > )->Arg( 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< DenseBitArray > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve< DenseBitArray > )->Arg( 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< DenseBitArray > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve2< DenseBitArray > )->Arg( 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< DenseBitArray > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve3< DenseBitArray > )->Arg( 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< DenseBitArray > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< DenseBitArray > )->Arg( 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve5< DenseBitArray > )->Arg( 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve5< DenseBitArray > )->Arg( 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactory>, 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactory>, 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactoryPooled>, 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactoryPooled>, 1000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE2( BenchSieve, PrimeSieve5< DenseBitArray >, 10000000000 )->MinTime( 2.0 );
+
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactory>, 10000000000 )->MinTime( 10.0 );
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactoryPooled>, 10000000000 )->MinTime( 10.0 );
+BENCHMARK_TEMPLATE( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactoryPooled> )->RangeMultiplier( 2 )
+->Range( 2000000, 256000000 )->Complexity();
 
 int main( int argc, char **argv )
 {
@@ -97,45 +135,6 @@ int main( int argc, char **argv )
     {
         return 1;
     }
-
-    //     Wheel<uint64_t, 3, 5, 7> wheel;
-    //
-    //     for ( uint32_t j = 0; j < 5; ++j )
-    //     {
-    //         uint64_t mask = wheel.GetMask( j );
-    //
-    //         for ( uint32_t i = 0; i < 64; ++i )
-    //         {
-    //             if ( ( ( mask ) >> i ) & 0x1 )
-    //             {
-    //                 std::cout << 1ul;
-    //             }
-    //             else
-    //             {
-    //                 std::cout << 0ul;
-    //             }
-    //
-    //             if ( ( ( j * 64 + i + 1 ) % 105 ) == 0 )
-    //             {
-    //                 std::cout << std::endl;
-    //             }
-    //         }
-    //
-    //         std::cout << " ";
-    //     }
-    //
-    //     for ( uint32_t j = 0; j < 5; ++j )
-    //     {
-    //         uint64_t mask = wheel.GetMask( j );
-    //
-    //         for ( uint32_t i = 0; i < 64; ++i )
-    //         {
-    //             if ( ( ( mask ) >> i ) & 0x1 )
-    //             {
-    //                 std::cout << ( ( ( i + 64 * j ) << 1 ) + 1 ) << std::endl;
-    //             }
-    //         }
-    //     }
 
     ::benchmark::RunSpecifiedBenchmarks();
 };

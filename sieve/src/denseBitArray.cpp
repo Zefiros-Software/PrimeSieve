@@ -19,61 +19,44 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#pragma once
-#ifndef __PRIMESIEVE_DENSEBITARRAY_H__
-#define __PRIMESIEVE_DENSEBITARRAY_H__
+#include "sieve/simple/denseBitArray.h"
 
-#include <vector>
-
-template< typename tBase >
-class DenseBitArray
+DenseBitArray::DenseBitArray() : mSize( 0 )
 {
-public:
 
-    explicit DenseBitArray( size_t size )
-        : mBits( ( size + mBitsInBase - 1 ) / mBitsInBase, ~( mBit ^ mBit ) ),
-          mSize( size ),
-          mCursor( 0 )
-    {
-    }
+}
 
-    std::vector< tBase > &GetRaw()
-    {
-        return mBits;
-    }
+std::vector< uint8_t > &DenseBitArray::GetRaw()
+{
+    return mBits;
+}
 
-    void SetFalse( size_t i )
-    {
-        const size_t iDiv = i / mBitsInBase;
+void DenseBitArray::SetFalse( uint64_t i )
+{
+    const uint64_t iDiv = i / mBitsInBase;
 
-        const tBase bit = mBits[iDiv] & ( mBit << ( i % mBitsInBase ) );
-        mBits[iDiv] ^= bit;
-    }
+    const uint8_t bit = mBits[iDiv] & ( mBit << ( i % mBitsInBase ) );
+    mBits[iDiv] ^= bit;
+}
 
-    bool Get( size_t i ) const
-    {
-        return ( mBits[i / mBitsInBase] & ( mBit << ( i % mBitsInBase ) ) ) > 0;
-    }
+bool DenseBitArray::Get( uint64_t i ) const
+{
+    return ( mBits[i / mBitsInBase] & ( mBit << ( i % mBitsInBase ) ) ) > 0;
+}
 
-    void Reset()
-    {
-        std::fill( mBits.begin(), mBits.end(), ~0x0 );
-    }
+void DenseBitArray::Reset()
+{
+    std::fill( mBits.begin(), mBits.end(), ~0x0 );
+}
 
-    size_t Size() const
-    {
-        return mSize;
-    }
+void DenseBitArray::Reset( uint64_t size )
+{
+    mBits.resize( ( size + mBitsInBase - 1 ) / mBitsInBase );
+    mSize = size;
+    std::fill( mBits.begin(), mBits.end(), ~0x0 );
+}
 
-private:
-
-    static constexpr size_t mBitsInBase = sizeof( tBase ) * 8;
-    static constexpr tBase mBit = 0x1;
-
-    std::vector< tBase > mBits;
-    size_t mSize;
-    size_t mCursor;
-
-};
-
-#endif
+uint64_t DenseBitArray::Size() const
+{
+    return mSize;
+}

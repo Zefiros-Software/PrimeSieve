@@ -19,126 +19,74 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "sieve/advancedSieve.h"
 #include "sieve/sieve.h"
 
-//#include "testHelper.h"
+#include "testHelper.h"
 
-//#include "gtest/gtest.h"
+#include "gtest/gtest.h"
 
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include "sieve/advanced/primeFactory.h"
 
 std::stringstream gSs;
 
 template< typename tSieve >
 void TestSieve()
 {
-    tSieve sieve( 1999993 );
-    sieve.ExecuteSieve();
-
+    tSieve sieve;
     std::stringstream ss;
-
-    for ( size_t p = 0; p <= 1999993; ++p )
-    {
-        if ( sieve.IsPrime( p ) )
-        {
-            ss << p << "\n";
-        }
-    }
+    StreamOutput output( ss );
+    sieve.ExecuteSieve( 2000000, output );
 
     std::ofstream( "../../test/testPrimes.txt", std::ofstream::trunc | std::ofstream::binary ) << ss.str();
-    //
-    //     system( "pause" );
 
-    //ExpectEqual( gSs.str(), ss.str() );
+    ExpectEqual( ss.str(), gSs.str() );
+}
+
+template< typename tSieve >
+void TestSieveAdvanced()
+{
+    typename tSieve::tFactoryType factory;
+    std::vector<uint8_t> segment( 32 * 1024 );
+    tSieve sieve( factory, segment );
+    std::stringstream ss;
+    StreamOutput output( ss );
+    sieve.ExecuteSieve( 2000000, output );
+
+    std::ofstream( "../../test/testPrimes.txt", std::ofstream::trunc | std::ofstream::binary ) << ss.str();
+
+    ExpectEqual( ss.str(), gSs.str() );
 }
 
 #define SIEVE_TEST( tSieve, sieve ) \
-TEST( P( Sieve ), sieve )          \
+TEST( P( Sieve ), sieve )           \
 {                                   \
     TestSieve<tSieve>();            \
 }
 
-// SIEVE_TEST( PrimeSieve< Vector >, CONCAT( PrimeSieve, Vector ) );
-// SIEVE_TEST( PrimeSieve2< Vector >, CONCAT( PrimeSieve2, Vector ) );
-// SIEVE_TEST( PrimeSieve3< Vector >, CONCAT( PrimeSieve3, Vector ) );
-// SIEVE_TEST( PrimeSieve4< Vector >, CONCAT( PrimeSieve4, Vector ) );
-//
-// SIEVE_TEST( PrimeSieve< BitArray >, CONCAT( PrimeSieve, BitArray ) );
-// SIEVE_TEST( PrimeSieve2< BitArray >, CONCAT( PrimeSieve2, BitArray ) );
-// SIEVE_TEST( PrimeSieve3< BitArray >, CONCAT( PrimeSieve3, BitArray ) );
-// SIEVE_TEST( PrimeSieve4< BitArray >, CONCAT( PrimeSieve4, BitArray ) );
-//
-// SIEVE_TEST( PrimeSieve5<>, PrimeSieve5 );
-// SIEVE_TEST( PrimeSieve6<>, PrimeSieve6 );
+#define SIEVE_TEST_ADVANCED( tSieve, sieve )    \
+TEST( P( Sieve ), sieve )                       \
+{                                               \
+    TestSieveAdvanced<tSieve>();                \
+}
 
-class StreamOutput
-{
-public:
+typedef VectorWrapper< uint8_t > Vector;
 
-    explicit StreamOutput( std::ostream &stream )
-        : mStream( stream )
-    {
+SIEVE_TEST( PrimeSieve< Vector >, CONCAT( PrimeSieve, Vector ) );
+SIEVE_TEST( PrimeSieve2< Vector >, CONCAT( PrimeSieve2, Vector ) );
+SIEVE_TEST( PrimeSieve3< Vector >, CONCAT( PrimeSieve3, Vector ) );
+SIEVE_TEST( PrimeSieve4< Vector >, CONCAT( PrimeSieve4, Vector ) );
+SIEVE_TEST( PrimeSieve5< Vector >, CONCAT( PrimeSieve5, Vector ) );
+SIEVE_TEST( PrimeSieve< DenseBitArray >, CONCAT( PrimeSieve, DenseBitArray ) );
+SIEVE_TEST( PrimeSieve2< DenseBitArray >, CONCAT( PrimeSieve2, DenseBitArray ) );
+SIEVE_TEST( PrimeSieve3< DenseBitArray >, CONCAT( PrimeSieve3, DenseBitArray ) );
+SIEVE_TEST( PrimeSieve4< DenseBitArray >, CONCAT( PrimeSieve4, DenseBitArray ) );
+SIEVE_TEST( PrimeSieve5< DenseBitArray >, CONCAT( PrimeSieve5, DenseBitArray ) );
 
-    }
-
-    StreamOutput &operator <<( const uint64_t &o )
-    {
-        mStream << o << "\n";
-        return *this;
-    }
-
-    template< typename tLambda >
-    void MaybeCall( const tLambda &lambda )
-    {
-        lambda();
-    }
-
-private:
-
-    std::ostream &mStream;
-};
-
-class VoidOutput
-{
-public:
-
-    VoidOutput &operator <<( const uint64_t & )
-    {
-        return *this;
-    }
-
-    template< typename tLambda >
-    void MaybeCall( const tLambda &/*lambda*/ )
-    {
-
-    }
-};
-
-// TEST( P( Sieve ), PrimeSieve9 )
-// {
-//     PrimeSieve9<> sieve( 1999993 );
-//     std::stringstream ss;
-//     StreamOutput sO( ss );
-//     //sieve.ExecuteSieve( sO );
-//
-//
-//     //     for ( size_t p = 0; p <= 1999993; ++p )
-//     //     {
-//     //         if ( sieve.IsPrime( p ) )
-//     //         {
-//     //             ss << p << "\n";
-//     //         }
-//     //     }
-//
-//     std::ofstream( "../../test/testPrimes.txt", std::ofstream::trunc | std::ofstream::binary ) << ss.str();
-//     //
-//     //     system( "pause" );
-//
-//     ExpectEqual( gSs.str(), ss.str() );
-// };
+SIEVE_TEST_ADVANCED( AdvancedSieve<SmallPrimeFactory>, CONCAT( AdvancedSieve, NewDelete ) );
+SIEVE_TEST_ADVANCED( AdvancedSieve<SmallPrimeFactoryPooled>, CONCAT( AdvancedSieve, Pooled ) );
 
 int main( int argc, char **argv )
 {
@@ -147,61 +95,25 @@ int main( int argc, char **argv )
     _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF );
     _CrtSetReportMode( _CRT_ASSERT, _CRTDBG_MODE_FILE );
     _CrtSetReportFile( _CRT_ASSERT, _CRTDBG_FILE_STDERR );
-    //_crtBreakAlloc = 742;
+    //_crtBreakAlloc =;
 #endif
 
-    //     std::ifstream stream( PRIMES_FILE );
-    //
-    //     std::string s;
-    //
-    //     while ( std::getline( stream, s ) )
-    //     {
-    //         gSs << s << "\n";
-    //     }
+    std::ifstream stream( PRIMES_FILE );
 
-    //     ::testing::InitGoogleTest( &argc, argv );
-    //
-    //     int32_t result = ::testing::UnitTest::GetInstance()->Run();
-    //
-    //    return result;
+    std::string s;
 
-    SmallPrimeFactoryPooled factory;
-    std::vector<uint8_t> segment( 32 * 1024 );
-
+    while ( std::getline( stream, s ) )
     {
-        std::ofstream file( "../../test/testPrimes.txt", std::ofstream::trunc | std::ofstream::binary );
-        StreamOutput output( file );
-
-        AdvancedSieve<SmallPrimeFactoryPooled> sieve( factory, segment );
-        sieve.ExecuteSieve( 2000000, output );
+        gSs << s << "\n";
     }
 
+    ::testing::InitGoogleTest( &argc, argv );
 
-    {
-        auto start = std::chrono::high_resolution_clock::now();
-        uint64_t i = 0;
+    int32_t result = ::testing::UnitTest::GetInstance()->Run();
 
-        {
-            VoidOutput vo;
+    gSs.str( "" );
+    gSs.clear();
+    gSs.~basic_stringstream();
 
-            for ( ; i < 10; ++i )
-            {
-                AdvancedSieve<SmallPrimeFactoryPooled> sieve( factory, segment );
-                sieve.ExecuteSieve( 10000000000, vo );
-            }
-        }
-
-        auto end = std::chrono::high_resolution_clock::now();
-
-        std::cout << ( std::chrono::duration_cast<std::chrono::milliseconds>( end - start ).count() / i ) << std::endl;
-    }
-
-    //     PrimeCrosser<31> pc( 31 );
-
-
-    //     uint8_t test[500];
-    //     pc.CrossOff<1>( test );
-    //     pc.CrossOff<29>( test );
-
-    return 0;
+    return result;
 }

@@ -24,7 +24,6 @@
 #define __PRIMESIEVE_MEMORYPOOL_H__
 
 #include <assert.h>
-#include <stdlib.h>
 #include <vector>
 
 /// @addtogroup Instantiators
@@ -59,9 +58,6 @@ public:
         : mBlockSize( blocksize ),
           mMaxBlocks( maxBlocks )
     {
-        //         static_assert( Util::IsChildParent< tT, tBase >::value,
-        //                        "UnsychronisedMemoryPoolInstantiator::UnsychronisedMemoryPoolInstantiator():\n\tThe child type should derive from the base type." );
-
         AddMemoryBlockArray();
     }
 

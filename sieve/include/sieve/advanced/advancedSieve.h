@@ -23,93 +23,12 @@
 #ifndef __PRIMESIEVE_ADVANCEDSIEVE_H__
 #define __PRIMESIEVE_ADVANCEDSIEVE_H__
 
+#include "sieve/advanced/bitValueHelpers.h"
 #include "sieve/advanced/memoryPool.h"
 #include "sieve/helper.h"
 
-#include <iostream>
-#include <stdint.h>
-#include <xutility>
-#include <fstream>
 #include <algorithm>
-
-template< uint64_t tOffsetMod30 >
-constexpr static uint8_t GetBitIndex()
-{
-    assert( false && "This value should not be tried" );
-    throw;
-}
-
-#define SIEVE_BITINDEX_OVERRIDE( byteValue, bitIndex )  \
-template<>                                              \
-constexpr uint8_t GetBitIndex<byteValue>()              \
-{                                                       \
-    return bitIndex;                                    \
-}
-
-SIEVE_BITINDEX_OVERRIDE( 7, 0 );
-SIEVE_BITINDEX_OVERRIDE( 11, 1 );
-SIEVE_BITINDEX_OVERRIDE( 13, 2 );
-SIEVE_BITINDEX_OVERRIDE( 17, 3 );
-SIEVE_BITINDEX_OVERRIDE( 19, 4 );
-SIEVE_BITINDEX_OVERRIDE( 23, 5 );
-SIEVE_BITINDEX_OVERRIDE( 29, 6 );
-SIEVE_BITINDEX_OVERRIDE( 31, 7 );
-
-#define SIEVE_ALL_BITVALUES_BASE( templateFunction, ... )   \
-templateFunction< 7>( __VA_ARGS__ );                        \
-templateFunction<11>( __VA_ARGS__ );                        \
-templateFunction<13>( __VA_ARGS__ );                        \
-templateFunction<17>( __VA_ARGS__ );                        \
-templateFunction<19>( __VA_ARGS__ );                        \
-templateFunction<23>( __VA_ARGS__ );                        \
-templateFunction<29>( __VA_ARGS__ );
-
-#define SIEVE_ALL_BITVALUES( templateFunction, ... )        \
-SIEVE_ALL_BITVALUES_BASE( templateFunction, __VA_ARGS__ );  \
-templateFunction<31>( __VA_ARGS__ );
-
-#define SIEVE_ALL_BITVALUES_MOD( templateFunction, ... )    \
-templateFunction<1>( __VA_ARGS__ );                         \
-SIEVE_ALL_BITVALUES_BASE( templateFunction, __VA_ARGS__ );
-
-constexpr static uint8_t GetBitValue( uint8_t bitIndex )
-{
-    return bitIndex == 0 ? 7 : (
-               bitIndex == 1 ? 11 : (
-                   bitIndex == 2 ? 13 : (
-                       bitIndex == 3 ? 17 : (
-                           bitIndex == 4 ? 19 : (
-                               bitIndex == 5 ? 23 : (
-                                   bitIndex == 6 ? 29 : 31 ) ) ) ) ) );
-}
-
-constexpr static uint8_t GetWheelIndex( uint8_t offsetMod30 )
-{
-    return offsetMod30 == 7 ? 1 : (
-               offsetMod30 == 11 ? 2 : (
-                   offsetMod30 == 13 ? 3 : (
-                       offsetMod30 == 17 ? 4 : (
-                           offsetMod30 == 19 ? 5 : (
-                               offsetMod30 == 23 ? 6 : (
-                                   offsetMod30 == 29 ? 7 : 0 ) ) ) ) ) );
-}
-
-template< uint64_t tOffsetMod30 >
-__forceinline constexpr static uint8_t GetBitMask()
-{
-    return 1 << GetBitIndex<tOffsetMod30>();
-}
-
-template< uint64_t tOffsetMod30 >
-__forceinline constexpr static uint8_t OffsetMask()
-{
-    return ~( GetBitMask<tOffsetMod30>() );
-}
-
-__forceinline constexpr uint8_t GetRest( uint8_t r, uint64_t m )
-{
-    return ( ( r * m ) % 30 ) == 1 ? 31 : ( ( r * m ) % 30 );
-}
+#include <xutility>
 
 template< uint8_t tPrimeMod30 >
 class PrimeCrosser
@@ -200,28 +119,8 @@ private:
     }
 };
 
-class IPrime
-{
-public:
-
-    virtual ~IPrime() = default;
-
-    virtual void SieveSegment( uint8_t *segment, uint32_t segmentSize ) = 0;
-};
-
-class ISmallPrime
-    : public IPrime
-{
-public:
-
-    virtual uint8_t GetPrimeMod30() const = 0;
-
-    virtual ~ISmallPrime() override = default;
-};
-
 template< uint8_t tPrimeMod30 >
 class SmallPrime
-    : public ISmallPrime
 {
 public:
 
@@ -247,15 +146,8 @@ public:
         mWheelIndex = GetWheelIndex( prime % 30 );
     }
 
-    void SieveSegment( uint8_t *segment, uint32_t segmentSize ) override
+    __forceinline void SieveSegment( uint8_t *segment, uint32_t segmentSize )
     {
-
-        //         if ( mNextMultipleIndex > segmentSize / 30 )
-        //         {
-        //             mNextMultipleIndex -= segmentSize / 30;
-        //             return;
-        //         }
-
         uint64_t primeDiv30 = mPrimeDiv30;
 
         uint8_t *q = segment + mNextMultipleIndex;
@@ -282,82 +174,33 @@ public:
                     q += tPrimeCrosser::template GetOffset<7>( primeDiv30 );
                 }
 
-            case 1:
-                {
-                    if ( !HandleCase<1, 7>( q, sieveEnd ) )
-                    {
-                        break;
-                    }
-
-                    q += tPrimeCrosser::template GetOffsetBetween<7, 11>( primeDiv30 );
+#define SIEVE_CROSSER_CASE_BODY( thisCase, thisPrime, nextPrime )                                       \
+            case thisCase:                                                                              \
+                {                                                                                       \
+                    if ( !HandleCase<thisCase, thisPrime>( q, sieveEnd ) )                              \
+                    {                                                                                   \
+                        break;                                                                          \
+                    }                                                                                   \
+                                                                                                        \
+                    q += tPrimeCrosser::template GetOffsetBetween<thisPrime, nextPrime>( primeDiv30 );  \
                 }
 
-            case 2:
-                {
-                    if ( !HandleCase<2, 11>( q, sieveEnd ) )
-                    {
-                        break;
-                    }
+                SIEVE_CROSSER_CASE_BODY( 1,  7, 11 );
+                SIEVE_CROSSER_CASE_BODY( 2, 11, 13 );
+                SIEVE_CROSSER_CASE_BODY( 3, 13, 17 );
+                SIEVE_CROSSER_CASE_BODY( 4, 17, 19 );
+                SIEVE_CROSSER_CASE_BODY( 5, 19, 23 );
+                SIEVE_CROSSER_CASE_BODY( 6, 23, 29 );
+                SIEVE_CROSSER_CASE_BODY( 7, 29, 31 );
 
-                    q += tPrimeCrosser::template GetOffsetBetween<11, 13>( primeDiv30 );
-                }
-
-            case 3:
-                {
-                    if ( !HandleCase<3, 13>( q, sieveEnd ) )
-                    {
-                        break;
-                    }
-
-                    q += tPrimeCrosser::template GetOffsetBetween<13, 17>( primeDiv30 );
-                }
-
-            case 4:
-                {
-                    if ( !HandleCase<4, 17>( q, sieveEnd ) )
-                    {
-                        break;
-                    }
-
-                    q += tPrimeCrosser::template GetOffsetBetween<17, 19>( primeDiv30 );
-                }
-
-            case 5:
-                {
-                    if ( !HandleCase<5, 19>( q, sieveEnd ) )
-                    {
-                        break;
-                    }
-
-                    q += tPrimeCrosser::template GetOffsetBetween<19, 23>( primeDiv30 );
-                }
-
-            case 6:
-                {
-                    if ( !HandleCase<6, 23>( q, sieveEnd ) )
-                    {
-                        break;
-                    }
-
-                    q += tPrimeCrosser::template GetOffsetBetween<23, 29>( primeDiv30 );
-                }
-
-            case 7:
-                {
-                    if ( !HandleCase<7, 29>( q, sieveEnd ) )
-                    {
-                        break;
-                    }
-
-                    q += tPrimeCrosser::template GetOffsetBetween<29, 31>( primeDiv30 );
-                }
+#undef SIEVE_CROSSER_CASE_BODY
             }
 
             mNextMultipleIndex = static_cast<uint32_t>( q - sieveEnd );
         }
     }
 
-    uint8_t GetPrimeMod30() const override
+    uint8_t GetPrimeMod30() const
     {
         return tPrimeMod30;
     }
@@ -388,189 +231,163 @@ private:
     }
 };
 
-class SmallPrimeFactoryPooled
+class PrimeStorage
 {
 public:
 
-    __forceinline ISmallPrime *Init( uint64_t prime, uint64_t segmentStart )
+    template< typename tFactory >
+    void ClearPrimes( tFactory &factory )
     {
-        switch ( prime % 30 )
+        for ( SmallPrime<7> *prime : mPrimes7 )
         {
-        case 7:
-            {
-                SmallPrime<7> *p = mFactory7.Create();
-                p->Init( prime, segmentStart );
-                return p;
-            }
-
-        case 11:
-            {
-                SmallPrime<11> *p = mFactory11.Create();
-                p->Init( prime, segmentStart );
-                return p;
-            }
-
-        case 13:
-            {
-                SmallPrime<13> *p = mFactory13.Create();
-                p->Init( prime, segmentStart );
-                return p;
-            }
-
-        case 17:
-            {
-                SmallPrime<17> *p = mFactory17.Create();
-                p->Init( prime, segmentStart );
-                return p;
-            }
-
-        case 19:
-            {
-                SmallPrime<19> *p = mFactory19.Create();
-                p->Init( prime, segmentStart );
-                return p;
-            }
-
-        case 23:
-            {
-                SmallPrime<23> *p = mFactory23.Create();
-                p->Init( prime, segmentStart );
-                return p;
-            }
-
-        case 29:
-            {
-                SmallPrime<29> *p = mFactory29.Create();
-                p->Init( prime, segmentStart );
-                return p;
-            }
-
-        default:
-            {
-                SmallPrime<31> *p = mFactory31.Create();
-                p->Init( prime, segmentStart );
-                return p;
-            }
+            factory.Release( prime );
         }
+
+        mPrimes7.clear();
+
+        for ( SmallPrime<11> *prime : mPrimes11 )
+        {
+            factory.Release( prime );
+        }
+
+        mPrimes11.clear();
+
+        for ( SmallPrime<13> *prime : mPrimes13 )
+        {
+            factory.Release( prime );
+        }
+
+        mPrimes13.clear();
+
+        for ( SmallPrime<17> *prime : mPrimes17 )
+        {
+            factory.Release( prime );
+        }
+
+        mPrimes17.clear();
+
+        for ( SmallPrime<19> *prime : mPrimes19 )
+        {
+            factory.Release( prime );
+        }
+
+        mPrimes19.clear();
+
+        for ( SmallPrime<23> *prime : mPrimes23 )
+        {
+            factory.Release( prime );
+        }
+
+        mPrimes23.clear();
+
+        for ( SmallPrime<29> *prime : mPrimes29 )
+        {
+            factory.Release( prime );
+        }
+
+        mPrimes29.clear();
+
+        for ( SmallPrime<31> *prime : mPrimes31 )
+        {
+            factory.Release( prime );
+        }
+
+        mPrimes31.clear();
     }
 
-    __forceinline void Release( ISmallPrime *p )
+    template<uint64_t tOffsetMod30>
+    std::vector<SmallPrime<tOffsetMod30> *> &GetStorage()
     {
-        switch ( p->GetPrimeMod30() )
-        {
-        case 7:
-            mFactory7.Destroy( reinterpret_cast< SmallPrime<7>  *>( p ) );
-            break;
-
-        case 11:
-            mFactory11.Destroy( reinterpret_cast< SmallPrime<11> * >( p ) );
-            break;
-
-        case 13:
-            mFactory13.Destroy( reinterpret_cast< SmallPrime<13> * >( p ) );
-            break;
-
-        case 17:
-            mFactory17.Destroy( reinterpret_cast< SmallPrime<17> * >( p ) );
-            break;
-
-        case 19:
-            mFactory19.Destroy( reinterpret_cast< SmallPrime<19> * >( p ) );
-            break;
-
-        case 23:
-            mFactory23.Destroy( reinterpret_cast< SmallPrime<23> * >( p ) );
-            break;
-
-        case 29:
-            mFactory29.Destroy( reinterpret_cast< SmallPrime<29> * >( p ) );
-            break;
-
-        case 31:
-            mFactory31.Destroy( reinterpret_cast< SmallPrime<31> * >( p ) );
-            break;
-        }
+        static_assert( false, "This should not be called" );
+        return {};
     }
 
 private:
 
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 7 > > mFactory7;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 11 > > mFactory11;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 13 > > mFactory13;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 17 > > mFactory17;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 19 > > mFactory19;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 23 > > mFactory23;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 29 > > mFactory29;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 31 > > mFactory31;
+    std::vector<SmallPrime<7> *>  mPrimes7;
+    std::vector<SmallPrime<11> *> mPrimes11;
+    std::vector<SmallPrime<13> *> mPrimes13;
+    std::vector<SmallPrime<17> *> mPrimes17;
+    std::vector<SmallPrime<19> *> mPrimes19;
+    std::vector<SmallPrime<23> *> mPrimes23;
+    std::vector<SmallPrime<29> *> mPrimes29;
+    std::vector<SmallPrime<31> *> mPrimes31;
 };
 
-class SmallPrimeFactory
+template <>
+inline std::vector<SmallPrime<7>*> &PrimeStorage::GetStorage<7>()
 {
-public:
+    return mPrimes7;
+}
 
-    static inline ISmallPrime *Init( uint32_t prime, uint64_t segmentStart )
-    {
-        switch ( prime % 30 )
-        {
-        case 7:
-            return new SmallPrime<7>( prime, segmentStart );
+template<>
+inline std::vector<SmallPrime<11> *> &PrimeStorage::GetStorage<11>()
+{
+    return mPrimes11;
+}
 
-        case 11:
-            return new SmallPrime<11>( prime, segmentStart );
+template<>
+inline std::vector<SmallPrime<13> *> &PrimeStorage::GetStorage<13>()
+{
+    return mPrimes13;
+}
 
-        case 13:
-            return new SmallPrime<13>( prime, segmentStart );
+template<>
+inline std::vector<SmallPrime<17> *> &PrimeStorage::GetStorage<17>()
+{
+    return mPrimes17;
+}
 
-        case 17:
-            return new SmallPrime<17>( prime, segmentStart );
+template<>
+inline std::vector<SmallPrime<19> *> &PrimeStorage::GetStorage<19>()
+{
+    return mPrimes19;
+}
 
-        case 19:
-            return new SmallPrime<19>( prime, segmentStart );
+template<>
+inline std::vector<SmallPrime<23> *> &PrimeStorage::GetStorage<23>()
+{
+    return mPrimes23;
+}
 
-        case 23:
-            return new SmallPrime<23>( prime, segmentStart );
+template<>
+inline std::vector<SmallPrime<29> *> &PrimeStorage::GetStorage<29>()
+{
+    return mPrimes29;
+}
 
-        case 29:
-            return new SmallPrime<29>( prime, segmentStart );
-
-        default:
-            return new SmallPrime<31>( prime, segmentStart );
-
-        }
-    }
-
-    static inline void Release( ISmallPrime *p )
-    {
-        delete p;
-    }
-};
-
+template<>
+inline std::vector<SmallPrime<31> *> &PrimeStorage::GetStorage<31>()
+{
+    return mPrimes31;
+}
 
 template< typename tFactory >
 class AdvancedSieve
 {
 public:
 
+    typedef tFactory tFactoryType;
+
     explicit AdvancedSieve( tFactory &factory, std::vector<uint8_t> &segment )
         : mSegment( segment ),
           mFactory( factory )
     {
-        std::fill( segment.begin(), segment.end(), static_cast<uint8_t>( ~0 ) );
     }
 
     ~AdvancedSieve()
     {
-        for ( ISmallPrime *prime : mPrimes )
-        {
-            mFactory.Release( prime );
-        }
-
-        mPrimes.clear();
+        mPrimeStorage.ClearPrimes( mFactory );
     }
 
     template< typename tOutput >
     void ExecuteSieve( uint64_t limit, tOutput &output )
     {
+        mPrimeStorage.ClearPrimes( mFactory );
+
+        std::fill( mSegment.begin(), mSegment.end(), static_cast<uint8_t>( ~0 ) );
+
+
         output << 2;
         output << 3;
         output << 5;
@@ -599,7 +416,8 @@ public:
             //         - Cross off multiples of the corresponding number
             //         - Append it to a list of primes we will cross off in the next segment
             //         - Output the number
-            for ( uint8_t *end = q + ( std::min<uint64_t>( Sqrt( segmentSize + 7 ), Sqrt( limit ) ) + 29 ) / 30; q < end; ++q, p += 30 )
+            for ( uint8_t *end = q + ( std::min<uint64_t>( Sqrt( segmentSize + 7 ), Sqrt( limit ) ) + 29 ) / 30; q < end;
+                    ++q, p += 30 )
             {
                 SIEVE_ALL_BITVALUES( ProcessBlockPrime, *q, p, 0, segmentSize, output );
             }
@@ -632,10 +450,22 @@ public:
             std::fill( mSegment.begin(), mSegment.end(), ~0x0 );
 
             // Sieve all the necessary primes we found below sqrt( limit ) from this segment
-            for ( ISmallPrime *prime : mPrimes )
-            {
-                prime->SieveSegment( mSegment.data(), segmentSize );
+#define SIEVE_SIEVE_PRIMES( bitValue )                                                  \
+            for ( SmallPrime<bitValue> *prime : mPrimeStorage.GetStorage<bitValue>() )  \
+            {                                                                           \
+                prime->SieveSegment( mSegment.data(), segmentSize );                    \
             }
+
+            SIEVE_SIEVE_PRIMES( 7 );
+            SIEVE_SIEVE_PRIMES( 11 );
+            SIEVE_SIEVE_PRIMES( 13 );
+            SIEVE_SIEVE_PRIMES( 17 );
+            SIEVE_SIEVE_PRIMES( 19 );
+            SIEVE_SIEVE_PRIMES( 23 );
+            SIEVE_SIEVE_PRIMES( 29 );
+            SIEVE_SIEVE_PRIMES( 31 );
+
+#undef SIEVE_SIEVE_PRIMES
 
             // For every block in the segment:
             //     If a bit position is still marked prime:
@@ -655,17 +485,18 @@ public:
 private:
 
     std::vector<uint8_t> &mSegment;
-    std::vector<ISmallPrime *> mPrimes;
+
+    PrimeStorage mPrimeStorage;
 
     tFactory &mFactory;
 
-    template< uint64_t tOffsetMod30, typename tOutput >
+    template< uint8_t tOffsetMod30, typename tOutput >
     void ProcessBlockPrime( const uint8_t &q, uint64_t p, uint64_t segmentStart, uint64_t segmentEnd, tOutput &output )
     {
         if ( q & GetBitMask<tOffsetMod30>() )
         {
-            ISmallPrime *prime = mFactory.Init( p + tOffsetMod30, segmentStart );
-            mPrimes.push_back( prime );
+            SmallPrime<tOffsetMod30> *prime = mFactory.Init<tOffsetMod30>( p + tOffsetMod30, segmentStart );
+            mPrimeStorage.template GetStorage<tOffsetMod30>().push_back( prime );
             prime->SieveSegment( mSegment.data(), static_cast<uint32_t>( segmentEnd ) );
             output << p + tOffsetMod30;
         }
@@ -676,8 +507,9 @@ private:
     {
         if ( q & GetBitMask<tOffsetMod30>() )
         {
-            ISmallPrime *prime = mFactory.Init( p + tOffsetMod30, segmentStart );
-            mPrimes.push_back( prime );
+            SmallPrime<tOffsetMod30> *prime = mFactory.Init<tOffsetMod30>( p + tOffsetMod30, segmentStart );
+            mPrimeStorage.template GetStorage<tOffsetMod30>().push_back( prime );
+
             output << p + tOffsetMod30;
         }
     }
@@ -701,7 +533,8 @@ private:
     }
 
     template< typename tOutput >
-    void OutputRemainingPrimesInSegment( uint8_t *&q, uint8_t *end, uint64_t &p, uint64_t pLimit, uint64_t limit, tOutput &output )
+    void OutputRemainingPrimesInSegment( uint8_t *&q, uint8_t *end, uint64_t &p, uint64_t pLimit, uint64_t limit,
+                                         tOutput &output )
     {
         for ( ; q < end && p < pLimit; ++q, p += 30 )
         {

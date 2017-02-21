@@ -20,51 +20,41 @@
  * THE SOFTWARE.
  */
 #pragma once
-#ifndef __PRIMESIEVE_VECTORWRAPPER_H__
-#define __PRIMESIEVE_VECTORWRAPPER_H__
+#ifndef __PRIMESIEVE_DENSEBITARRAY_H__
+#define __PRIMESIEVE_DENSEBITARRAY_H__
 
 #include <vector>
 
-template< typename tBase >
-class VectorWrapper
+class DenseBitArray
 {
 public:
 
-    static constexpr tBase tTrue = 0x1;
-    static constexpr tBase tFalse = 0x0;
+    explicit DenseBitArray();
 
-    explicit VectorWrapper( size_t size )
-        : mBooleans( size, tTrue ),
-          mSize( size ),
-          mCursor( 0 )
-    {
-    }
+    std::vector< uint8_t > &GetRaw();
 
-    void SetFalse( size_t i )
-    {
-        mBooleans[i] ^= mBooleans[i];
-    }
+    void SetFalse( uint64_t i );
 
-    bool Get( size_t i ) const
-    {
-        return mBooleans[i] == tTrue;
-    }
+    bool Get( uint64_t i ) const;
 
-    void Reset()
-    {
-        std::fill( mBooleans.begin(), mBooleans.end(), tTrue );
-    }
+    void Reset();
 
-    size_t Size() const
+    void Reset( uint64_t size );
+
+    uint64_t Size() const;
+
+    static constexpr uint64_t GetNumbersPerByte()
     {
-        return mSize;
+        return mBitsInBase;
     }
 
 private:
 
-    std::vector< tBase > mBooleans;
-    size_t mSize;
-    size_t mCursor;
+    static constexpr uint64_t mBitsInBase = sizeof( uint8_t ) * 8;
+    static constexpr uint8_t mBit = 0x1;
+
+    std::vector< uint8_t > mBits;
+    uint64_t mSize;
 
 };
 

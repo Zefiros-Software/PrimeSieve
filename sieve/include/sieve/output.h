@@ -20,15 +20,53 @@
  * THE SOFTWARE.
  */
 #pragma once
-#ifndef __PRIMESIEVE_HELPER_H__
-#define __PRIMESIEVE_HELPER_H__
+#ifndef __PRIMESIEVE_OUTPUT_H__
+#define __PRIMESIEVE_OUTPUT_H__
 
-#include <complex>
+#include <stdint.h>
+#include <ostream>
 
-template< typename tT >
-tT Sqrt( tT val )
+class VoidOutput
 {
-    return static_cast<tT>( std::sqrt( val ) );
-}
+public:
+
+    VoidOutput &operator <<( const uint64_t & )
+    {
+        return *this;
+    }
+
+    template< typename tLambda >
+    void MaybeCall( const tLambda &/*lambda*/ )
+    {
+
+    }
+};
+
+class StreamOutput
+{
+public:
+
+    explicit StreamOutput( std::ostream &stream )
+        : mStream( stream )
+    {
+
+    }
+
+    StreamOutput &operator <<( const uint64_t &o )
+    {
+        mStream << o << "\n";
+        return *this;
+    }
+
+    template< typename tLambda >
+    void MaybeCall( const tLambda &lambda )
+    {
+        lambda();
+    }
+
+private:
+
+    std::ostream &mStream;
+};
 
 #endif
