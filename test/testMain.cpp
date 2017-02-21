@@ -85,8 +85,8 @@ SIEVE_TEST( PrimeSieve3< DenseBitArray >, CONCAT( PrimeSieve3, DenseBitArray ) )
 SIEVE_TEST( PrimeSieve4< DenseBitArray >, CONCAT( PrimeSieve4, DenseBitArray ) );
 SIEVE_TEST( PrimeSieve5< DenseBitArray >, CONCAT( PrimeSieve5, DenseBitArray ) );
 
-SIEVE_TEST_ADVANCED( AdvancedSieve<SmallPrimeFactory>, CONCAT( AdvancedSieve, NewDelete ) );
-SIEVE_TEST_ADVANCED( AdvancedSieve<SmallPrimeFactoryPooled>, CONCAT( AdvancedSieve, Pooled ) );
+SIEVE_TEST_ADVANCED( AdvancedSieve<PrimeFactory>, CONCAT( AdvancedSieve, NewDelete ) );
+SIEVE_TEST_ADVANCED( AdvancedSieve<PrimeFactoryPooled>, CONCAT( AdvancedSieve, Pooled ) );
 
 int main( int argc, char **argv )
 {

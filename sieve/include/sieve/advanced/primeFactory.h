@@ -28,43 +28,43 @@
 class ISmallPrime;
 
 template< uint8_t tPrimeMod30 >
-class SmallPrime;
+class Prime;
 
 
-class SmallPrimeFactoryPooled
+class PrimeFactoryPooled
 {
 public:
 
     template<uint64_t tPrimeMod30>
-    SmallPrime<tPrimeMod30> *Init( uint64_t /*prime*/, uint64_t /*segmentStart*/ )
+    Prime<tPrimeMod30> *Init( uint64_t /*prime*/, uint64_t /*segmentStart*/ )
     {
         static_assert( false, "This should not be called" );
         return nullptr;
     }
 
     template<uint64_t tPrimeMod30>
-    void Release( SmallPrime<tPrimeMod30> * /*p*/ )
+    void Release( Prime<tPrimeMod30> * /*p*/ )
     {
         static_assert( false, "This should not be called" );
     }
 
 private:
 
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 7 > > mFactory7;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 11 > > mFactory11;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 13 > > mFactory13;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 17 > > mFactory17;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 19 > > mFactory19;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 23 > > mFactory23;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 29 > > mFactory29;
-    UnsychronisedMemoryPoolInstantiator< SmallPrime< 31 > > mFactory31;
+    UnsychronisedMemoryPoolInstantiator< Prime< 7 > > mFactory7;
+    UnsychronisedMemoryPoolInstantiator< Prime< 11 > > mFactory11;
+    UnsychronisedMemoryPoolInstantiator< Prime< 13 > > mFactory13;
+    UnsychronisedMemoryPoolInstantiator< Prime< 17 > > mFactory17;
+    UnsychronisedMemoryPoolInstantiator< Prime< 19 > > mFactory19;
+    UnsychronisedMemoryPoolInstantiator< Prime< 23 > > mFactory23;
+    UnsychronisedMemoryPoolInstantiator< Prime< 29 > > mFactory29;
+    UnsychronisedMemoryPoolInstantiator< Prime< 31 > > mFactory31;
 };
 
 #define SIEVE_FACTORY_POOLED_INIT( bitValue, factory )                                                          \
     template<>                                                                                                  \
-    SmallPrime<bitValue> *SmallPrimeFactoryPooled::Init<bitValue>( uint64_t prime, uint64_t segmentStart )      \
+    Prime<bitValue> *PrimeFactoryPooled::Init<bitValue>( uint64_t prime, uint64_t segmentStart )      \
     {                                                                                                           \
-        SmallPrime<bitValue> *p = factory.Create();                                                             \
+        Prime<bitValue> *p = factory.Create();                                                             \
         p->Init( prime, segmentStart );                                                                         \
         return p;                                                                                               \
     }
@@ -82,9 +82,9 @@ SIEVE_FACTORY_POOLED_INIT( 31, mFactory31 );
 
 #define SIEVE_FACTORY_POOLED_RELEASE( bitValue, factory )                   \
     template<>                                                              \
-    void SmallPrimeFactoryPooled::Release( SmallPrime<bitValue> *p )        \
+    void PrimeFactoryPooled::Release( Prime<bitValue> *p )        \
     {                                                                       \
-        factory.Destroy( reinterpret_cast<SmallPrime<bitValue>  *>( p ) );  \
+        factory.Destroy( reinterpret_cast<Prime<bitValue>  *>( p ) );  \
     }
 
 SIEVE_FACTORY_POOLED_RELEASE( 7, mFactory7 );
@@ -99,18 +99,18 @@ SIEVE_FACTORY_POOLED_RELEASE( 31, mFactory31 );
 #undef SIEVE_FACTORY_POOLED_RELEASE
 
 
-class SmallPrimeFactory
+class PrimeFactory
 {
 public:
 
     template<uint64_t tPrimeMod30>
-    inline SmallPrime<tPrimeMod30> *Init( uint64_t prime, uint64_t segmentStart )
+    inline Prime<tPrimeMod30> *Init( uint64_t prime, uint64_t segmentStart )
     {
-        return new SmallPrime<tPrimeMod30>( prime, segmentStart );
+        return new Prime<tPrimeMod30>( prime, segmentStart );
     }
 
     template<uint64_t tPrimeMod30>
-    inline void Release( SmallPrime<tPrimeMod30> *p )
+    inline void Release( Prime<tPrimeMod30> *p )
     {
         delete p;
     }

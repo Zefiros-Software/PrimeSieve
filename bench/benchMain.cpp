@@ -114,17 +114,17 @@ BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve4< DenseBitArray > )->Arg( 1000 )->Min
 BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve5< DenseBitArray > )->Arg( 2000000 )->MinTime( 2.0 );
 BENCHMARK_TEMPLATE( BenchSieve, PrimeSieve5< DenseBitArray > )->Arg( 1000 )->MinTime( 2.0 );
 
-BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactory>, 2000000 )->MinTime( 2.0 );
-BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactory>, 1000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<PrimeFactory>, 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<PrimeFactory>, 1000 )->MinTime( 2.0 );
 
-BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactoryPooled>, 2000000 )->MinTime( 2.0 );
-BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactoryPooled>, 1000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<PrimeFactoryPooled>, 2000000 )->MinTime( 2.0 );
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<PrimeFactoryPooled>, 1000 )->MinTime( 2.0 );
 
 BENCHMARK_TEMPLATE2( BenchSieve, PrimeSieve5< DenseBitArray >, 10000000000 )->MinTime( 2.0 );
 
-BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactory>, 10000000000 )->MinTime( 10.0 );
-BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactoryPooled>, 10000000000 )->MinTime( 10.0 );
-BENCHMARK_TEMPLATE( BenchAdvancedSieve, AdvancedSieve<SmallPrimeFactoryPooled> )->RangeMultiplier( 2 )
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<PrimeFactory>, 10000000000 )->MinTime( 10.0 );
+BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<PrimeFactoryPooled>, 10000000000 )->MinTime( 10.0 );
+BENCHMARK_TEMPLATE( BenchAdvancedSieve, AdvancedSieve<PrimeFactoryPooled> )->RangeMultiplier( 2 )
 ->Range( 2000000, 256000000 )->Complexity();
 
 int main( int argc, char **argv )

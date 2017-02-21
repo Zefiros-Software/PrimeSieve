@@ -120,16 +120,16 @@ private:
 };
 
 template< uint8_t tPrimeMod30 >
-class SmallPrime
+class Prime
 {
 public:
 
-    SmallPrime( uint64_t prime, uint64_t segmentStart )
+    Prime( uint64_t prime, uint64_t segmentStart )
     {
         Init( prime, segmentStart );
     }
 
-    SmallPrime()
+    Prime()
     {}
 
     void Init( uint64_t prime, uint64_t segmentStart )
@@ -238,56 +238,56 @@ public:
     template< typename tFactory >
     void ClearPrimes( tFactory &factory )
     {
-        for ( SmallPrime<7> *prime : mPrimes7 )
+        for ( Prime<7> *prime : mPrimes7 )
         {
             factory.Release( prime );
         }
 
         mPrimes7.clear();
 
-        for ( SmallPrime<11> *prime : mPrimes11 )
+        for ( Prime<11> *prime : mPrimes11 )
         {
             factory.Release( prime );
         }
 
         mPrimes11.clear();
 
-        for ( SmallPrime<13> *prime : mPrimes13 )
+        for ( Prime<13> *prime : mPrimes13 )
         {
             factory.Release( prime );
         }
 
         mPrimes13.clear();
 
-        for ( SmallPrime<17> *prime : mPrimes17 )
+        for ( Prime<17> *prime : mPrimes17 )
         {
             factory.Release( prime );
         }
 
         mPrimes17.clear();
 
-        for ( SmallPrime<19> *prime : mPrimes19 )
+        for ( Prime<19> *prime : mPrimes19 )
         {
             factory.Release( prime );
         }
 
         mPrimes19.clear();
 
-        for ( SmallPrime<23> *prime : mPrimes23 )
+        for ( Prime<23> *prime : mPrimes23 )
         {
             factory.Release( prime );
         }
 
         mPrimes23.clear();
 
-        for ( SmallPrime<29> *prime : mPrimes29 )
+        for ( Prime<29> *prime : mPrimes29 )
         {
             factory.Release( prime );
         }
 
         mPrimes29.clear();
 
-        for ( SmallPrime<31> *prime : mPrimes31 )
+        for ( Prime<31> *prime : mPrimes31 )
         {
             factory.Release( prime );
         }
@@ -296,7 +296,7 @@ public:
     }
 
     template<uint64_t tOffsetMod30>
-    std::vector<SmallPrime<tOffsetMod30> *> &GetStorage()
+    std::vector<Prime<tOffsetMod30> *> &GetStorage()
     {
         static_assert( false, "This should not be called" );
         return {};
@@ -304,60 +304,60 @@ public:
 
 private:
 
-    std::vector<SmallPrime<7> *>  mPrimes7;
-    std::vector<SmallPrime<11> *> mPrimes11;
-    std::vector<SmallPrime<13> *> mPrimes13;
-    std::vector<SmallPrime<17> *> mPrimes17;
-    std::vector<SmallPrime<19> *> mPrimes19;
-    std::vector<SmallPrime<23> *> mPrimes23;
-    std::vector<SmallPrime<29> *> mPrimes29;
-    std::vector<SmallPrime<31> *> mPrimes31;
+    std::vector<Prime<7> *>  mPrimes7;
+    std::vector<Prime<11> *> mPrimes11;
+    std::vector<Prime<13> *> mPrimes13;
+    std::vector<Prime<17> *> mPrimes17;
+    std::vector<Prime<19> *> mPrimes19;
+    std::vector<Prime<23> *> mPrimes23;
+    std::vector<Prime<29> *> mPrimes29;
+    std::vector<Prime<31> *> mPrimes31;
 };
 
 template <>
-inline std::vector<SmallPrime<7>*> &PrimeStorage::GetStorage<7>()
+inline std::vector<Prime<7>*> &PrimeStorage::GetStorage<7>()
 {
     return mPrimes7;
 }
 
 template<>
-inline std::vector<SmallPrime<11> *> &PrimeStorage::GetStorage<11>()
+inline std::vector<Prime<11> *> &PrimeStorage::GetStorage<11>()
 {
     return mPrimes11;
 }
 
 template<>
-inline std::vector<SmallPrime<13> *> &PrimeStorage::GetStorage<13>()
+inline std::vector<Prime<13> *> &PrimeStorage::GetStorage<13>()
 {
     return mPrimes13;
 }
 
 template<>
-inline std::vector<SmallPrime<17> *> &PrimeStorage::GetStorage<17>()
+inline std::vector<Prime<17> *> &PrimeStorage::GetStorage<17>()
 {
     return mPrimes17;
 }
 
 template<>
-inline std::vector<SmallPrime<19> *> &PrimeStorage::GetStorage<19>()
+inline std::vector<Prime<19> *> &PrimeStorage::GetStorage<19>()
 {
     return mPrimes19;
 }
 
 template<>
-inline std::vector<SmallPrime<23> *> &PrimeStorage::GetStorage<23>()
+inline std::vector<Prime<23> *> &PrimeStorage::GetStorage<23>()
 {
     return mPrimes23;
 }
 
 template<>
-inline std::vector<SmallPrime<29> *> &PrimeStorage::GetStorage<29>()
+inline std::vector<Prime<29> *> &PrimeStorage::GetStorage<29>()
 {
     return mPrimes29;
 }
 
 template<>
-inline std::vector<SmallPrime<31> *> &PrimeStorage::GetStorage<31>()
+inline std::vector<Prime<31> *> &PrimeStorage::GetStorage<31>()
 {
     return mPrimes31;
 }
@@ -451,7 +451,7 @@ public:
 
             // Sieve all the necessary primes we found below sqrt( limit ) from this segment
 #define SIEVE_SIEVE_PRIMES( bitValue )                                                  \
-            for ( SmallPrime<bitValue> *prime : mPrimeStorage.GetStorage<bitValue>() )  \
+            for ( Prime<bitValue> *prime : mPrimeStorage.GetStorage<bitValue>() )  \
             {                                                                           \
                 prime->SieveSegment( mSegment.data(), segmentSize );                    \
             }
@@ -495,7 +495,7 @@ private:
     {
         if ( q & GetBitMask<tOffsetMod30>() )
         {
-            SmallPrime<tOffsetMod30> *prime = mFactory.Init<tOffsetMod30>( p + tOffsetMod30, segmentStart );
+            Prime<tOffsetMod30> *prime = mFactory.Init<tOffsetMod30>( p + tOffsetMod30, segmentStart );
             mPrimeStorage.template GetStorage<tOffsetMod30>().push_back( prime );
             prime->SieveSegment( mSegment.data(), static_cast<uint32_t>( segmentEnd ) );
             output << p + tOffsetMod30;
@@ -507,7 +507,7 @@ private:
     {
         if ( q & GetBitMask<tOffsetMod30>() )
         {
-            SmallPrime<tOffsetMod30> *prime = mFactory.Init<tOffsetMod30>( p + tOffsetMod30, segmentStart );
+            Prime<tOffsetMod30> *prime = mFactory.Init<tOffsetMod30>( p + tOffsetMod30, segmentStart );
             mPrimeStorage.template GetStorage<tOffsetMod30>().push_back( prime );
 
             output << p + tOffsetMod30;
