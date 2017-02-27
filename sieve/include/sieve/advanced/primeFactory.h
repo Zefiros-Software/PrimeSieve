@@ -30,73 +30,53 @@ class ISmallPrime;
 template< uint8_t tPrimeMod30 >
 class Prime;
 
-
-class PrimeFactoryPooled
+template< uint8_t tPrimeMod30 >
+class PrimeFactoryPooledBase
 {
 public:
 
-    template<uint64_t tPrimeMod30>
-    Prime<tPrimeMod30> *Init( uint64_t /*prime*/, uint64_t /*segmentStart*/ )
+    Prime<tPrimeMod30> *Init( uint64_t prime, uint64_t segmentStart )
     {
-        static_assert( false, "This should not be called" );
-        return nullptr;
+        Prime<tPrimeMod30> *p = mPool.Create();
+        p->Init( prime, segmentStart );
+        return p;
     }
 
-    template<uint64_t tPrimeMod30>
-    void Release( Prime<tPrimeMod30> * /*p*/ )
+    void Release( Prime<tPrimeMod30> *p )
     {
-        static_assert( false, "This should not be called" );
+        mPool.Destroy( p );
     }
 
 private:
 
-    UnsychronisedMemoryPoolInstantiator< Prime< 7 > > mFactory7;
-    UnsychronisedMemoryPoolInstantiator< Prime< 11 > > mFactory11;
-    UnsychronisedMemoryPoolInstantiator< Prime< 13 > > mFactory13;
-    UnsychronisedMemoryPoolInstantiator< Prime< 17 > > mFactory17;
-    UnsychronisedMemoryPoolInstantiator< Prime< 19 > > mFactory19;
-    UnsychronisedMemoryPoolInstantiator< Prime< 23 > > mFactory23;
-    UnsychronisedMemoryPoolInstantiator< Prime< 29 > > mFactory29;
-    UnsychronisedMemoryPoolInstantiator< Prime< 31 > > mFactory31;
+    UnsychronisedMemoryPoolInstantiator<Prime<tPrimeMod30>> mPool;
 };
 
-#define SIEVE_FACTORY_POOLED_INIT( bitValue, factory )                                                          \
-    template<>                                                                                                  \
-    Prime<bitValue> *PrimeFactoryPooled::Init<bitValue>( uint64_t prime, uint64_t segmentStart )      \
-    {                                                                                                           \
-        Prime<bitValue> *p = factory.Create();                                                             \
-        p->Init( prime, segmentStart );                                                                         \
-        return p;                                                                                               \
+
+class PrimeFactoryPooled
+    : PrimeFactoryPooledBase<7>,
+      PrimeFactoryPooledBase<11>,
+      PrimeFactoryPooledBase<13>,
+      PrimeFactoryPooledBase<17>,
+      PrimeFactoryPooledBase<19>,
+      PrimeFactoryPooledBase<23>,
+      PrimeFactoryPooledBase<29>,
+      PrimeFactoryPooledBase<31>
+{
+public:
+
+    template<uint64_t tPrimeMod30>
+    __forceinline Prime<tPrimeMod30> *Init( uint64_t prime, uint64_t segmentStart )
+    {
+        return PrimeFactoryPooledBase<tPrimeMod30>::Init( prime, segmentStart );
     }
 
-SIEVE_FACTORY_POOLED_INIT( 7, mFactory7 );
-SIEVE_FACTORY_POOLED_INIT( 11, mFactory11 );
-SIEVE_FACTORY_POOLED_INIT( 13, mFactory13 );
-SIEVE_FACTORY_POOLED_INIT( 17, mFactory17 );
-SIEVE_FACTORY_POOLED_INIT( 19, mFactory19 );
-SIEVE_FACTORY_POOLED_INIT( 23, mFactory23 );
-SIEVE_FACTORY_POOLED_INIT( 29, mFactory29 );
-SIEVE_FACTORY_POOLED_INIT( 31, mFactory31 );
-
-#undef SIEVE_FACTORY_POOLED_INIT
-
-#define SIEVE_FACTORY_POOLED_RELEASE( bitValue, factory )                   \
-    template<>                                                              \
-    void PrimeFactoryPooled::Release( Prime<bitValue> *p )        \
-    {                                                                       \
-        factory.Destroy( reinterpret_cast<Prime<bitValue>  *>( p ) );  \
+    template<uint64_t tPrimeMod30>
+    void Release( Prime<tPrimeMod30> *p )
+    {
+        PrimeFactoryPooledBase<tPrimeMod30>::Release( p );
     }
-
-SIEVE_FACTORY_POOLED_RELEASE( 7, mFactory7 );
-SIEVE_FACTORY_POOLED_RELEASE( 11, mFactory11 );
-SIEVE_FACTORY_POOLED_RELEASE( 13, mFactory13 );
-SIEVE_FACTORY_POOLED_RELEASE( 17, mFactory17 );
-SIEVE_FACTORY_POOLED_RELEASE( 19, mFactory19 );
-SIEVE_FACTORY_POOLED_RELEASE( 23, mFactory23 );
-SIEVE_FACTORY_POOLED_RELEASE( 29, mFactory29 );
-SIEVE_FACTORY_POOLED_RELEASE( 31, mFactory31 );
-
-#undef SIEVE_FACTORY_POOLED_RELEASE
+};
 
 
 class PrimeFactory

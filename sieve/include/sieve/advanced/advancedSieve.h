@@ -235,136 +235,57 @@ private:
     }
 };
 
-class PrimeStorage
+template< uint8_t tPrimeMod30 >
+class PrimeStorageBase
 {
 public:
 
     template< typename tFactory >
     void ClearPrimes( tFactory &factory )
     {
-        for ( Prime<7> *prime : mPrimes7 )
+        for ( Prime<tPrimeMod30> *prime : mPrimes )
         {
             factory.Release( prime );
         }
 
-        mPrimes7.clear();
-
-        for ( Prime<11> *prime : mPrimes11 )
-        {
-            factory.Release( prime );
-        }
-
-        mPrimes11.clear();
-
-        for ( Prime<13> *prime : mPrimes13 )
-        {
-            factory.Release( prime );
-        }
-
-        mPrimes13.clear();
-
-        for ( Prime<17> *prime : mPrimes17 )
-        {
-            factory.Release( prime );
-        }
-
-        mPrimes17.clear();
-
-        for ( Prime<19> *prime : mPrimes19 )
-        {
-            factory.Release( prime );
-        }
-
-        mPrimes19.clear();
-
-        for ( Prime<23> *prime : mPrimes23 )
-        {
-            factory.Release( prime );
-        }
-
-        mPrimes23.clear();
-
-        for ( Prime<29> *prime : mPrimes29 )
-        {
-            factory.Release( prime );
-        }
-
-        mPrimes29.clear();
-
-        for ( Prime<31> *prime : mPrimes31 )
-        {
-            factory.Release( prime );
-        }
-
-        mPrimes31.clear();
+        mPrimes.clear();
     }
 
-    template<uint64_t tOffsetMod30>
-    std::vector<Prime<tOffsetMod30> *> &GetStorage()
+    std::vector<Prime<tPrimeMod30> *> &GetStorage()
     {
-        static_assert( false, "This should not be called" );
-        return {};
+        return mPrimes;
     }
 
 private:
 
-    std::vector<Prime<7> *>  mPrimes7;
-    std::vector<Prime<11> *> mPrimes11;
-    std::vector<Prime<13> *> mPrimes13;
-    std::vector<Prime<17> *> mPrimes17;
-    std::vector<Prime<19> *> mPrimes19;
-    std::vector<Prime<23> *> mPrimes23;
-    std::vector<Prime<29> *> mPrimes29;
-    std::vector<Prime<31> *> mPrimes31;
+    std::vector<Prime<tPrimeMod30 > *> mPrimes;
 };
 
-template <>
-inline std::vector<Prime<7>*> &PrimeStorage::GetStorage<7>()
+class PrimeStorage
+    : PrimeStorageBase< 7>, PrimeStorageBase<11>, PrimeStorageBase<13>, PrimeStorageBase<17>,
+      PrimeStorageBase<19>, PrimeStorageBase<23>, PrimeStorageBase<29>, PrimeStorageBase<31>
 {
-    return mPrimes7;
-}
+public:
 
-template<>
-inline std::vector<Prime<11> *> &PrimeStorage::GetStorage<11>()
-{
-    return mPrimes11;
-}
+    template< typename tFactory >
+    void ClearPrimes( tFactory &factory )
+    {
+        PrimeStorageBase<7>::ClearPrimes( factory );
+        PrimeStorageBase<11>::ClearPrimes( factory );
+        PrimeStorageBase<13>::ClearPrimes( factory );
+        PrimeStorageBase<17>::ClearPrimes( factory );
+        PrimeStorageBase<19>::ClearPrimes( factory );
+        PrimeStorageBase<23>::ClearPrimes( factory );
+        PrimeStorageBase<29>::ClearPrimes( factory );
+        PrimeStorageBase<31>::ClearPrimes( factory );
+    }
 
-template<>
-inline std::vector<Prime<13> *> &PrimeStorage::GetStorage<13>()
-{
-    return mPrimes13;
-}
-
-template<>
-inline std::vector<Prime<17> *> &PrimeStorage::GetStorage<17>()
-{
-    return mPrimes17;
-}
-
-template<>
-inline std::vector<Prime<19> *> &PrimeStorage::GetStorage<19>()
-{
-    return mPrimes19;
-}
-
-template<>
-inline std::vector<Prime<23> *> &PrimeStorage::GetStorage<23>()
-{
-    return mPrimes23;
-}
-
-template<>
-inline std::vector<Prime<29> *> &PrimeStorage::GetStorage<29>()
-{
-    return mPrimes29;
-}
-
-template<>
-inline std::vector<Prime<31> *> &PrimeStorage::GetStorage<31>()
-{
-    return mPrimes31;
-}
+    template<uint8_t tPrimeMod30>
+    __forceinline std::vector<Prime<tPrimeMod30> *> &GetStorage()
+    {
+        return PrimeStorageBase<tPrimeMod30>::GetStorage();
+    }
+};
 
 template< typename tFactory >
 class AdvancedSieve
@@ -455,7 +376,7 @@ public:
 
             // Sieve all the necessary primes we found below sqrt( limit ) from this segment
 #define SIEVE_SIEVE_PRIMES( bitValue )                                                  \
-            for ( Prime<bitValue> *prime : mPrimeStorage.GetStorage<bitValue>() )  \
+            for ( Prime<bitValue> *prime : mPrimeStorage.GetStorage<bitValue>() )       \
             {                                                                           \
                 prime->SieveSegment( mSegment.data(), segmentSize );                    \
             }
