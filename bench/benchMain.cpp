@@ -123,8 +123,8 @@ BENCHMARK_TEMPLATE2( BenchSieve, PrimeSieve5< DenseBitArray >, 10000000000 )->Mi
 
 BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<PrimeFactory>, 10000000000 )->MinTime( 10.0 );
 BENCHMARK_TEMPLATE2( BenchAdvancedSieve, AdvancedSieve<PrimeFactoryPooled>, 10000000000 )->MinTime( 10.0 );
-BENCHMARK_TEMPLATE( BenchAdvancedSieve, AdvancedSieve<PrimeFactoryPooled> )->RangeMultiplier( 2 )
-->Range( 2000000, 256000000 )->Complexity();
+// BENCHMARK_TEMPLATE( BenchAdvancedSieve, AdvancedSieve<PrimeFactoryPooled> )->RangeMultiplier( 2 )
+// ->Range( 2000000, 256000000 )->Complexity();
 
 int main( int argc, char **argv )
 {
